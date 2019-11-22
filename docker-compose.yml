@@ -1,0 +1,61 @@
+version: "3.7"
+
+services:
+
+  traefik:
+    image: "traefik:latest"
+    restart: always
+    container_name: traefik
+    command:
+      - "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.file.filename=dynamic_conf.toml"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=web"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
+      - "--certificatesresolvers.mytlschallenge.acme.email=theafkdeveloper@gmail.com"
+      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+      - "4000:4000"
+    volumes:
+      - ./letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./config/dynamic_conf.toml:/dynamic_conf.toml
+  
+  client:
+    image: itb-client:latest
+    container_name: client
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`itbvault.com`)"
+      - "traefik.http.routers.web.entrypoints=web"
+      - "traefik.http.routers.web.middlewares=redirect@file"
+      - "traefik.http.routers.web-secured.rule=Host(`itbvault.com`)"
+      - "traefik.http.routers.web-secured.entrypoints=websecure"
+      - "traefik.http.routers.web-secured.tls.certresolver=mytlschallenge"
+    networks:
+      - web
+      - internal
+    depends_on:
+      - api
+
+  api:
+    image: itb-api:latest
+    container_name: api
+    labels:
+      - "traefik.enable=true"
+    networks:
+      - internal
+
+
+networks:
+  web:
+    external: true
+  internal:
+    external: false

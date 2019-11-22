@@ -1,0 +1,3 @@
+[http.middleware]
+  [http.middlewares.redirect.redirectScheme]
+    scheme="https"
