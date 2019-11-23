@@ -1,0 +1,4 @@
+middlewares:
+  redirect:
+    redirectScheme:
+      scheme: https
