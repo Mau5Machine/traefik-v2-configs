@@ -1,61 +1,56 @@
-version: "3.7"
+version: "3.3"
 
 services:
-
+  ################################################
+  ####                Traefik Proxy Setup                             #####
+  ###############################################
   traefik:
-    image: "traefik:latest"
-    restart: always
+    image: traefik:v2.0 # The official traefik 2.0 image to use
     container_name: traefik
-    command:
-      - "--log.level=DEBUG"
-      - "--api.insecure=true"
-      - "--providers.docker=true"
-      - "--providers.file.filename=dynamic_conf.toml"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=web"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.mytlschallenge.acme.tlschallenge=true"
-      - "--certificatesresolvers.mytlschallenge.acme.email=theafkdeveloper@gmail.com"
-      - "--certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json"
-    ports:
+    ports: # Ports to expose to the host
       - "80:80"
-      - "443:443"
       - "8080:8080"
-      - "4000:4000"
+      - "443:443"
+    command:
+      - --api.insecure=true # Enable Dashboard
+      - --api.debug=true
+      - --log.level=DEBUG # Enable Debug logging ("ERROR", "PANIC", "FATAL", "WARN", "INFO", "DEBUG")
+      - --providers.file.filename=/config/dynamic.toml # Set dynamic configuration filename
+      - --providers.docker=true # Set Docker as a provider
+      - --providers.docker.network=web # Setting the docker network to use for all connections to containers
+      - --entrypoints.web.address=:80 # Create entrypoint for port 80 called 'web'
+      - --entrypoints.web-secured.address=:443 # Create entrypoint for port 443 called 'web-secured'
+      - --metrics.datadog=true # Enable metrics from DataDog
+      - --providers.docker.exposedbydefault=false
+      - --certificatesresolvers.mytlschallenge.acme.tlschallenge=true
+      - --certificatesresolvers.mytlschallenge.acme.email=theafkdeveloper@gmail.com
+      - --certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json
+    labels:
+      - "traefik.http.routers.api.rule=Host(`monitor.itbvault.com`)"
     volumes:
       - ./letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock
       - ./config/dynamic_conf.toml:/dynamic_conf.toml
-  
-  client:
-    image: itb-client:latest
-    container_name: client
+    networks:
+      - web # Attach container to network to comunicate with other containers
+
+  ################################################
+  ####                Portal Site Setup Container                 #####
+  ###############################################
+  nginx: # Name of service
+    image: nginx:latest # Official Wordpress image
+    container_name: nginx
+    networks:
+      - web # Attach container to network to comunicate with other containers
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.web.rule=Host(`itbvault.com`)"
-      - "traefik.http.routers.web.entrypoints=web"
-      - "traefik.http.routers.web.middlewares=redirect@file"
-      - "traefik.http.routers.web-secured.rule=Host(`itbvault.com`)"
-      - "traefik.http.routers.web-secured.entrypoints=websecure"
+      #### Labels define the behavior and rules of the traefik proxy for this container ####
+      - "traefik.http.routers.nginx-web.rule=Host(`itbvault.com`)" # Set the Domain Name rule for port 80 here
+      - "traefik.http.routers.nginx-web.entrypoints=web" # This is the entrypoint that your domain will be picked up on (referring to port 80 or 'web' from line 19)
+      - "traefik.http.routers.nginx-web.middlewares=redirect@file" # Let's redirect traffic from port 80 to 443, apply a middleware (this middleware is located in config/dynamic.toml)
+      - "traefik.http.routers.nginx-secured.rule=Host(`itbvault.com`)" # Set the Domain Name rule for port 443 here
+      - "traefik.http.routers.nginx-secured.entrypoints=web-secured" # The secure entrypoint we want the domain to be picked up on (referring to port 443 or 'web-secured' from line 48)
       - "traefik.http.routers.web-secured.tls.certresolver=mytlschallenge"
-    networks:
-      - web
-      - internal
-    depends_on:
-      - api
-
-  api:
-    image: itb-api:latest
-    container_name: api
-    labels:
-      - "traefik.enable=true"
-    networks:
-      - internal
-
 
 networks:
   web:
     external: true
-  internal:
-    external: false
