@@ -10,7 +10,6 @@ services:
     container_name: traefik
     ports:
       - "80:80"
-      - "8080:8080"
       - "443:443"
     command:
       - --api.insecure=true
@@ -19,41 +18,33 @@ services:
       - --log.level=DEBUG
       - --providers.file.filename=/config/dynamic.yaml
       - --providers.docker=true
+        - --providers.docker.exposedByDefault=false
       - --providers.docker.network=web
       - --entrypoints.web.address=:80
-      - --entrypoints.web-secured.address=:443
-      # - --providers.docker.exposedbydefault=false
-      - --certificatesresolvers.mytlschallenge.acme.tlschallenge=true
-      - --certificatesresolvers.mytlschallenge.acme.email=theafkdeveloper@gmail.com
-      - --certificatesresolvers.mytlschallenge.acme.storage=/letsencrypt/acme.json
+      - --entrypoints.websecure.address=:443
     volumes:
-      - ./letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./certs/:/etc/certs/
       - ./config/dynamic.yaml:/dynamic.yaml
     networks:
       - web
     labels:
-      - "traefik.http.routers.api.rule=Host(`monitor.itbvault.com`)"
+      - "traefik.enable=true"
       - "traefik.http.routers.api.service=api@internal"
-      - "traefik.http.routers.api.middlewares=auth"
-      - "traefik.http.middlewares.auth.basicauth.users=admin:$$apr1$$nPQSPzUo$$VQ.MtOuL.L9CfkV8MiOkv0"
 
-  ################################################
-  ####    Portal Site Setup Container       #####
-  ###############################################
   nginx:
     image: nginx:latest
     container_name: nginx
     networks:
       - web
     labels:
-      #### Labels define the behavior and rules of the traefik proxy for this container ####
-      - "traefik.http.routers.nginx-web.rule=Host(`itbvault.com`)"
+      - "traefik.enable=true"
+      - "traefik.http.routers.nginx-web.rule=Host(`example.com`)"
       - "traefik.http.routers.nginx-web.entrypoints=web"
       - "traefik.http.routers.nginx-web.middlewares=redirect@file"
-      - "traefik.http.routers.nginx-secured.rule=Host(`itbvault.com`)"
-      - "traefik.http.routers.nginx-secured.entrypoints=web-secured"
-      - "traefik.http.routers.nginx-secured.tls.certresolver=mytlschallenge"
+      - "traefik.http.routers.nginx-secured.rule=Host(`example.com`)"
+      - "traefik.http.routers.nginx-secured.entrypoints=websecure"
+      - "traefik.http.routers.nginx-secured.tls=true"
 
 networks:
   web:

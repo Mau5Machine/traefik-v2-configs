@@ -1,4 +1,15 @@
-middlewares:
-  redirect:
-    redirectScheme:
-      scheme: https
+tls:
+  certificates:
+    # THIS REFERENCES CERTS INSIDE THE CONTAINER
+    - certFile: /etc/certs/example.crt
+      keyFile: /etc/certs/example.key
+  options:
+    default:
+      minVersion: VersionTLS12
+
+# REDIRECT MIDDLEWARE RULE
+http:
+  middlewares:
+    redirect:
+      redirectScheme:
+        scheme: https
