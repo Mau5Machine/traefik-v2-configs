@@ -1,9 +1,9 @@
 version: "3.3"
 
 services:
-  ################################################
+  ##################################
   ####        Traefik Proxy Setup           #####
-  ###############################################
+  ###################################
   traefik:
     image: traefik:v2.0
     restart: always
@@ -16,15 +16,17 @@ services:
       - --api.dashboard=true
       - --api.debug=true
       - --log.level=DEBUG
+      # DEFINE THE NAMES OF YOUR CERT AND KEY IN HERE
+      # DEFINE THE REDIRECT RULE IN HERE
       - --providers.file.filename=/config/dynamic.yaml
       - --providers.docker=true
-        - --providers.docker.exposedByDefault=false
+      - --providers.docker.exposedByDefault=false
       - --providers.docker.network=web
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./certs/:/etc/certs/
+      - ./certs/:/etc/certs/ ## MOUNT THE DIRECTORY WITH YOUR CERTS AND KEYS IN IT
       - ./config/dynamic.yaml:/dynamic.yaml
     networks:
       - web
