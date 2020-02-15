@@ -48,7 +48,8 @@ services:
       #- "traefik.http.routers.nginx-secured.rule=Host(`thrivingcoder.com`)"
       #- "traefik.http.routers.nginx-secured.entrypoints=websecure"
       #- "traefik.http.routers.nginx-secured.tls=true"
-
+    volumes:
+      - ./certs/:/usr/share/nginx/html/.well-known/acme-challenge/
 networks:
   web:
     external: true
