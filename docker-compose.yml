@@ -36,7 +36,7 @@ services:
       - "traefik.http.routers.api.service=api@internal"
 
   nginx:
-    image: new-nginx
+    image: nginx
     container_name: nginx
     networks:
       - web
@@ -44,12 +44,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.nginx-web.rule=Host(`thrivingcoder.com`, `www.thrivingcoder.com`)"
       - "traefik.http.routers.nginx-web.entrypoints=web"
-      #- "traefik.http.routers.nginx-web.middlewares=redirect@file"
-      #- "traefik.http.routers.nginx-secured.rule=Host(`thrivingcoder.com`)"
-      #- "traefik.http.routers.nginx-secured.entrypoints=websecure"
-      #- "traefik.http.routers.nginx-secured.tls=true"
-    volumes:
-      - ./certs/:/usr/share/nginx/html/.well-known/acme-challenge/
+      - "traefik.http.routers.nginx-web.middlewares=redirect@file"
+      - "traefik.http.routers.nginx-secured.rule=Host(`thrivingcoder.com`)"
+      - "traefik.http.routers.nginx-secured.entrypoints=websecure"
+      - "traefik.http.routers.nginx-secured.tls=true"
 networks:
   web:
     external: true
