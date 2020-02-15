@@ -10,6 +10,6 @@ tls:
 # REDIRECT MIDDLEWARE RULE
 http:
   middlewares:
-    redirect:
+    https-redirectscheme:
       redirectScheme:
         scheme: https
