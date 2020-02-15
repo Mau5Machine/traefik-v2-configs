@@ -19,7 +19,7 @@ services:
       - --log.level=DEBUG
       # DEFINE THE NAMES OF YOUR CERT AND KEY IN HERE
       # DEFINE THE REDIRECT RULE IN HERE
-      - --providers.file.filename=./config/dynamic.yaml
+      - --providers.file.filename=/config/dynamic.yml
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
       - --providers.docker.network=web
@@ -28,7 +28,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./certs/:/etc/certs/ ## MOUNT THE DIRECTORY WITH YOUR CERTS AND KEYS IN IT
-      - ./config/dynamic.yaml:/dynamic.yaml
+      - ./config/dynamic.yml:/dynamic.yml
     networks:
       - web
     labels:
