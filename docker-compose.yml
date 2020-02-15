@@ -11,6 +11,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
     command:
       - --api.insecure=true
       - --api.dashboard=true
@@ -35,8 +36,7 @@ services:
       - "traefik.http.routers.api.service=api@internal"
 
   nginx:
-    build:
-      context: .
+    image: new-nginx
     container_name: nginx
     networks:
       - web
@@ -44,10 +44,10 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.nginx-web.rule=Host(`thrivingcoder.com`)"
       - "traefik.http.routers.nginx-web.entrypoints=web"
-      - "traefik.http.routers.nginx-web.middlewares=redirect@file"
-      - "traefik.http.routers.nginx-secured.rule=Host(`thrivingcoder.com`)"
-      - "traefik.http.routers.nginx-secured.entrypoints=websecure"
-      - "traefik.http.routers.nginx-secured.tls=true"
+      #- "traefik.http.routers.nginx-web.middlewares=redirect@file"
+      #- "traefik.http.routers.nginx-secured.rule=Host(`thrivingcoder.com`)"
+      #- "traefik.http.routers.nginx-secured.entrypoints=websecure"
+      #- "traefik.http.routers.nginx-secured.tls=true"
 
 networks:
   web:
