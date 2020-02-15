@@ -42,7 +42,7 @@ services:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nginx-web.rule=Host(`thrivingcoder.com`)"
+      - "traefik.http.routers.nginx-web.rule=Host(`thrivingcoder.com`, `www.thrivingcoder.com`)"
       - "traefik.http.routers.nginx-web.entrypoints=web"
       #- "traefik.http.routers.nginx-web.middlewares=redirect@file"
       #- "traefik.http.routers.nginx-secured.rule=Host(`thrivingcoder.com`)"
