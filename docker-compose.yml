@@ -11,6 +11,7 @@ services:
     ports:
       - "80:80"
       - "443:443"
+      - "8080:8080"
     command:
       - --api.insecure=true
       - --api.dashboard=true
@@ -18,7 +19,7 @@ services:
       - --log.level=DEBUG
       # DEFINE THE NAMES OF YOUR CERT AND KEY IN HERE
       # DEFINE THE REDIRECT RULE IN HERE
-      - --providers.file.filename=/config/dynamic.yaml
+      - --providers.file.filename=dynamic.yml
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
       - --providers.docker.network=web
@@ -27,7 +28,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./certs/:/etc/certs/ ## MOUNT THE DIRECTORY WITH YOUR CERTS AND KEYS IN IT
-      - ./config/dynamic.yaml:/dynamic.yaml
+      - ./dynamic.yml:/dynamic.yml
     networks:
       - web
     labels:
@@ -35,60 +36,18 @@ services:
       - "traefik.http.routers.api.service=api@internal"
 
   nginx:
-    image: nginx:latest
+    image: nginx
     container_name: nginx
     networks:
       - web
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.nginx-web.rule=Host(`example.com`)"
+      - "traefik.http.routers.nginx-web.rule=Host(`thrivingcoder.com`, `www.thrivingcoder.com`)"
       - "traefik.http.routers.nginx-web.entrypoints=web"
-      - "traefik.http.routers.nginx-web.middlewares=redirect@file"
-      - "traefik.http.routers.nginx-secured.rule=Host(`example.com`)"
+      - "traefik.http.routers.nginx-web.middlewares=https-redirectscheme@file"
+      - "traefik.http.routers.nginx-secured.rule=Host(`thrivingcoder.com`)"
       - "traefik.http.routers.nginx-secured.entrypoints=websecure"
       - "traefik.http.routers.nginx-secured.tls=true"
-
-  wordpress:
-    container_name: wordpress
-    image: wordpress
-    depends_on:
-      - db
-    networks:
-      - web
-      - backend
-    environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_PASSWORD: examplepass
-      WORDPRESS_DB_USER: exampleuser
-      WORDPRESS_DB_NAME: exampledb
-      WORDPRESS_TABLE_PREFIX: examplepass
-    labels:
-      ## YOU CAN GET RID OF THESE TOP 3 RULES IF YOUR CONTAINER EXPOSES 443 ##
-      - "traefik.http.routers.wordpress.rule=Host(`example2.com`)"
-      - "traefik.http.routers.wordpress.entrypoints=web"
-      - "traefik.http.routers.wordpress.middlewares=redirect@file"
-      - "traefik.http.routers.wordpress-secure.rule=Host(`example2.com`)"
-      - "traefik.http.routers.wordpress-secure.entrypoints=websecure"
-      - "traefik.http.routers.wordpress-secure.tls=true"
-    volumes:
-      - ./webroot/:/var/www/html/
-
-  db:
-    image: mysql:5.7
-    environment:
-      MYSQL_DATABASE: exampledb
-      MYSQL_USER: exampleuse
-      MYSQL_PASSWORD: examplepass
-      MYSQL_RANDOM_ROOT_PASSWORD: "1"
-    volumes:
-      - db:/var/lib/mysql
-    networks:
-      - backend
-
-volumes:
-  db: {}
-
 networks:
   web:
     external: true
-  backend:

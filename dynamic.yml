@@ -1,15 +1,15 @@
 tls:
   certificates:
     # THIS REFERENCES CERTS INSIDE THE CONTAINER
-    - certFile: /etc/certs/example.crt
-      keyFile: /etc/certs/example.key
+    - certFile: /etc/certs/ca_bundle.crt
+      keyFile: /etc/certs/private.key
   options:
     default:
       minVersion: VersionTLS12
 
-# REDIRECT MIDDLEWARE RULE
+# Redirect to https
 http:
   middlewares:
-    redirect:
+    test-redirectscheme:
       redirectScheme:
         scheme: https
