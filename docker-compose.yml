@@ -19,7 +19,7 @@ services:
       - --log.level=DEBUG
       # DEFINE THE NAMES OF YOUR CERT AND KEY IN HERE
       # DEFINE THE REDIRECT RULE IN HERE
-      - --providers.file.filename=/config/dynamic.yaml
+      - --providers.file.filename=./config/dynamic.yaml
       - --providers.docker=true
       - --providers.docker.exposedByDefault=false
       - --providers.docker.network=web
@@ -44,7 +44,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.nginx-web.rule=Host(`thrivingcoder.com`, `www.thrivingcoder.com`)"
       - "traefik.http.routers.nginx-web.entrypoints=web"
-      - "traefik.http.routers.nginx-web.middlewares=redirect@file"
+      - "traefik.http.routers.nginx-web.middlewares=https-redirectscheme@file"
       - "traefik.http.routers.nginx-secured.rule=Host(`thrivingcoder.com`)"
       - "traefik.http.routers.nginx-secured.entrypoints=websecure"
       - "traefik.http.routers.nginx-secured.tls=true"

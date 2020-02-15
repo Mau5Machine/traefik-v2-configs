@@ -7,9 +7,9 @@ tls:
     default:
       minVersion: VersionTLS12
 
-# REDIRECT MIDDLEWARE RULE
+# Redirect to https
 http:
   middlewares:
-    https-redirectscheme:
+    test-redirectscheme:
       redirectScheme:
         scheme: https
